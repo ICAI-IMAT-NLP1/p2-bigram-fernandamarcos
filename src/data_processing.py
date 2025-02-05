@@ -26,11 +26,16 @@ def load_and_preprocess_data(
     Returns:
         List[Tuple[str, str]]. A list of bigrams, where each bigram is a tuple of two characters.
     """
+
+    bigrams: List[Tuple[str, str]] = []
+
     with open(filepath, "r") as file:
         lines: List[str] = file.read().splitlines()
-
-    # TODO
-    bigrams: List[Tuple[str, str]] = None
+        for line in lines: 
+            name = start_token + line.split()[0].strip().lower() + end_token
+            for char in range(len(name)-1): 
+                bigrams.append((name[char], name[char+1]))
+            
 
     return bigrams
 
@@ -49,7 +54,12 @@ def char_to_index(alphabet: str, start_token: str, end_token: str) -> Dict[str, 
     """
     # Create a dictionary with start token at the beginning and end token at the end
     # TODO
-    char_to_idx: Dict[str, int] = None
+    char_to_idx: Dict[str, int] = {}
+
+    complete_str = start_token + alphabet + end_token
+
+    for char in range(len(complete_str)): 
+        char_to_idx[complete_str[char]] = char
 
     return char_to_idx
 
@@ -66,7 +76,8 @@ def index_to_char(char_to_index: Dict[str, int]) -> Dict[int, str]:
     """
     # Reverse the char_to_index mapping
     # TODO
-    idx_to_char: Dict[int, str] = None
+    idx_to_char: Dict[int, str] = {index: char for char, index in char_to_index.items()}
+
 
     return idx_to_char
 
@@ -92,12 +103,17 @@ def count_bigrams(
     """
 
     # Initialize a 2D tensor for counting bigrams
-    # TODO
-    bigram_counts: torch.Tensor = None
+    
+    bigram_counts: torch.Tensor = torch.zeros(len(char_to_idx), len(char_to_idx))
 
     # Iterate over each bigram and update the count in the tensor
-    # TODO
-
+    keys = char_to_idx.keys()
+    for bigram in bigrams: 
+        if bigram[0] in keys and bigram[1] in keys:
+            b1 = char_to_idx[bigram[0]]
+            b2 = char_to_idx[bigram[1]]
+            bigram_counts[b1,b2] += 1 
+        
     return bigram_counts
 
 
@@ -121,7 +137,7 @@ def plot_bigram_counts(bigram_counts: torch.Tensor, idx_to_char: Dict):
             )
 
     plt.axis("off")
-    plt.show()
+    plt.savefig("bigram_plot.png")  # Guarda la figura como una imagen
 
 
 if __name__ == "__main__":
